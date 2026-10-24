@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The AI Ecosystem</title>
+<style>
+  :root{--bg:#05060a;--panel:#0c0f16;--line:#1c2230;--text:#e9edf3;--muted:#8d96a6;--chip:#151a24}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{padding:16px 20px 10px;border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  header h1{font-size:20px;margin:0 0 4px;font-weight:600;letter-spacing:.2px}
+  header p{margin:0;color:var(--muted);font-size:13.5px;max-width:720px;line-height:1.5}
+  .hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin-left:auto}
+  .search{position:relative;width:300px;max-width:100%}
+  .search input{width:100%;background:#0f131c;border:1px solid #2a3244;border-radius:10px;color:var(--text);font-size:14px;padding:9px 12px 9px 34px;outline:none}
+  .search input:focus{border-color:#4b6fa8;box-shadow:0 0 0 3px rgba(61,184,255,.15)}
+  .search .sicon{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;border:2px solid var(--muted);border-radius:50%;pointer-events:none}
+  .search .sicon:after{content:'';position:absolute;width:6px;height:2px;background:var(--muted);right:-6px;bottom:-3px;transform:rotate(45deg)}
+  .results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#0f131c;border:1px solid #2a3244;border-radius:10px;padding:6px;z-index:20;max-height:360px;overflow-y:auto;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .results[hidden]{display:none}
+  .res{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:7px;cursor:pointer}
+  .res.active,.res:hover{background:#1a2030}
+  .res b{display:block;font-size:13.5px;font-weight:600}
+  .res small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;margin-top:1px}
+  .res mark{background:none;color:#7fd0ff}
+  .noresult{padding:10px;color:var(--muted);font-size:13px}
+  .chip.hit{border-color:#7fd0ff;box-shadow:0 0 0 2px rgba(127,208,255,.25)}
+  @keyframes pulse{0%{opacity:1}100%{opacity:.15}}
+  .pulse{animation:pulse 1.1s ease-in-out infinite alternate}
+  .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+  .wrap{display:flex;height:calc(100vh - 118px);min-height:560px}
+  .stage{flex:1;position:relative;min-width:0;overflow:hidden}
+  svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none;user-select:none}
+  svg.dragging{cursor:grabbing}
+  .controls{position:absolute;left:14px;bottom:14px;display:flex;gap:8px}
+  .btn{background:rgba(20,25,35,.85);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
+  .btn:hover{border-color:#3a4458}
+  .hint{position:absolute;right:14px;bottom:16px;font-size:12px;color:var(--muted);pointer-events:none}
+  .panel{width:370px;flex:none;background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:20px 20px 28px}
+  .panel h2{font-size:19px;margin:6px 0 6px;font-weight:600}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+  .panel p{color:#c3cad6;font-size:14px;line-height:1.6;margin:0 0 14px}
+  .sec{margin-top:18px}
+  .sec h3{font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin:0 0 8px;font-weight:600}
+  .link{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+  .link:hover{background:var(--chip);border-color:var(--line)}
+  .link .dot{margin-top:6px}
+  .link b{display:block;font-size:14px;font-weight:600}
+  .link small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 4px;font-size:12.5px;color:var(--text);text-decoration:none}
+  a.chip:hover{border-color:#3a4458;background:#1b2130}
+  .logo{width:22px;height:22px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:9.5px;font-weight:700;color:#0c0f16}
+  .logo img{width:16px;height:16px;object-fit:contain}
+  .ext{opacity:.5;font-size:11px}
+  .sat a:hover text.lbl{text-decoration:underline}
+  .group{margin-bottom:10px}
+  .foot{margin-top:22px;font-size:11.5px;color:#6c7586;line-height:1.5}
+  .edge-base{fill:none;stroke-width:1.4;opacity:.28;transition:opacity .35s}
+  .edge-flow{fill:none;stroke-width:2;opacity:.55;stroke-dasharray:2 10;animation:flow 1.4s linear infinite;transition:opacity .35s}
+  @keyframes flow{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion:reduce){.edge-flow{animation:none}}
+  .node{cursor:pointer;transition:opacity .35s}
+  .node text{font-size:15px;fill:#dfe5ee;text-anchor:middle;paint-order:stroke;stroke:#05060a;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+  .node:hover .ring{stroke-opacity:1}
+  .deco{transition:opacity .35s}
+  .dim{opacity:.08!important}
+  .hl.edge-base{opacity:.75;stroke-width:2.2}
+  .hl.edge-flow{opacity:1;stroke-width:2.6}
+  .sat text{fill:#e9edf3;paint-order:stroke;stroke:#05060a;stroke-linejoin:round}
+  .sat{animation:fadein .4s ease both}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  @media (max-width:860px){
+    .wrap{flex-direction:column;height:auto}
+    .stage{height:64vh;min-height:380px}
+    .panel{width:auto;border-left:0;border-top:1px solid var(--line)}
+    .hint{display:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>The AI Ecosystem</h1>
+    <p>From sand and electricity to the chatbot on your phone. Tap any node to zoom in and see what flows into it, what it supplies, and who the key players are.</p>
+  </div>
+  <div class="hdr-right">
+    <div class="search">
+      <span class="sicon"></span>
+      <input id="q" type="search" placeholder="Search companies or parts of the network" autocomplete="off" aria-label="Search companies" aria-controls="results">
+      <div class="results" id="results" role="listbox" hidden></div>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <svg id="svg" viewBox="0 0 1440 960" preserveAspectRatio="xMidYMid meet" aria-label="Network map of the AI ecosystem">
+      <defs>
+        <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="7" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <g id="gBg"></g><g id="gDeco"></g><g id="gEdges"></g><g id="gNodes"></g><g id="gSat"></g>
+    </svg>
+    <div class="controls">
+      <button class="btn" id="resetBtn">Full network</button>
+    </div>
+    <div class="hint">Drag to pan · scroll to zoom · / to search · Esc to reset</div>
+  </div>
+  <aside class="panel" id="panel"></aside>
+</div>
+
+<script>
+const LAYERS = {
+  supply:  {name:'Semiconductor Supply Chain', c:'#ff6a3d'},
+  chips:   {name:'Chips & Hardware',           c:'#ffc23d'},
+  infra:   {name:'Physical Infrastructure',    c:'#2fd6b4'},
+  compute: {name:'Compute Providers',          c:'#3db8ff'},
+  ai:      {name:'Models & Data',              c:'#a98bff'},
+  demand:  {name:'Applications & Demand',      c:'#ff6fb1'},
+  capital: {name:'Capital',                    c:'#c9d1dc'}
+};
+
+const SITES = {
+"Shin-Etsu": "https://www.shinetsu.co.jp/en/",
+"SUMCO": "https://www.sumcosi.com/english/",
+"GlobalWafers": "https://www.sas-globalwafers.com/en/",
+"Siltronic": "https://www.siltronic.com/",
+"JSR": "https://www.jsr.co.jp/jsr_e/",
+"Linde": "https://www.linde.com/",
+"Air Liquide": "https://www.airliquide.com/",
+"Synopsys": "https://www.synopsys.com/",
+"Cadence": "https://www.cadence.com/",
+"Siemens EDA": "https://eda.sw.siemens.com/",
+"Arm": "https://www.arm.com/",
+"Alphawave": "https://awavesemi.com/",
+"ASML": "https://www.asml.com/",
+"Applied Materials": "https://www.appliedmaterials.com/",
+"Lam Research": "https://www.lamresearch.com/",
+"Tokyo Electron": "https://www.tel.com/",
+"KLA": "https://www.kla.com/",
+"Nvidia": "https://www.nvidia.com/",
+"AMD": "https://www.amd.com/",
+"Broadcom": "https://www.broadcom.com/",
+"Marvell": "https://www.marvell.com/",
+"Google TPU": "https://cloud.google.com/tpu",
+"AWS Trainium": "https://aws.amazon.com/ai/machine-learning/trainium/",
+"Cerebras": "https://www.cerebras.ai/",
+"TSMC": "https://www.tsmc.com/",
+"Samsung Foundry": "https://semiconductor.samsung.com/foundry/",
+"Intel Foundry": "https://www.intel.com/content/www/us/en/foundry/overview.html",
+"SK hynix": "https://www.skhynix.com/",
+"Samsung": "https://semiconductor.samsung.com/",
+"Micron": "https://www.micron.com/",
+"TSMC (CoWoS)": "https://www.tsmc.com/",
+"ASE": "https://www.aseglobal.com/",
+"Amkor": "https://amkor.com/",
+"Intel (Foveros)": "https://www.intel.com/",
+"Nvidia (InfiniBand, Spectrum-X)": "https://www.nvidia.com/en-us/networking/",
+"Arista": "https://www.arista.com/",
+"Cisco": "https://www.cisco.com/",
+"Coherent": "https://www.coherent.com/",
+"Lumentum": "https://www.lumentum.com/",
+"InnoLight": "https://www.innolight.com/",
+"Foxconn": "https://www.foxconn.com/",
+"Quanta": "https://www.quantatw.com/",
+"Wistron / Wiwynn": "https://www.wiwynn.com/",
+"Supermicro": "https://www.supermicro.com/",
+"Dell": "https://www.dell.com/",
+"HPE": "https://www.hpe.com/",
+"NextEra": "https://www.nexteraenergy.com/",
+"Constellation": "https://www.constellationenergy.com/",
+"Vistra": "https://vistracorp.com/",
+"GE Vernova": "https://www.gevernova.com/",
+"Siemens Energy": "https://www.siemens-energy.com/",
+"Oklo": "https://oklo.com/",
+"Vertiv": "https://www.vertiv.com/",
+"Schneider Electric": "https://www.se.com/",
+"Eaton": "https://www.eaton.com/",
+"ABB": "https://global.abb/",
+"Trane": "https://www.trane.com/",
+"Equinix": "https://www.equinix.com/",
+"Digital Realty": "https://www.digitalrealty.com/",
+"QTS (Blackstone)": "https://qtsdatacenters.com/",
+"Vantage": "https://vantage-dc.com/",
+"NTT": "https://www.global.ntt/",
+"AdaniConneX": "https://www.adaniconnex.com/",
+"Yotta": "https://yotta.com/",
+"AWS": "https://aws.amazon.com/",
+"Microsoft Azure": "https://azure.microsoft.com/",
+"Google Cloud": "https://cloud.google.com/",
+"Oracle OCI": "https://www.oracle.com/cloud/",
+"Meta (own use)": "https://www.meta.com/",
+"CoreWeave": "https://www.coreweave.com/",
+"Nebius": "https://nebius.com/",
+"Lambda": "https://lambda.ai/",
+"Crusoe": "https://www.crusoe.ai/",
+"Together AI": "https://www.together.ai/",
+"Scale AI": "https://scale.com/",
+"Surge AI": "https://www.surgehq.ai/",
+"Mercor": "https://www.mercor.com/",
+"Common Crawl": "https://commoncrawl.org/",
+"OpenAI": "https://openai.com/",
+"Anthropic": "https://www.anthropic.com/",
+"Google DeepMind": "https://deepmind.google/",
+"Meta": "https://ai.meta.com/",
+"xAI": "https://x.ai/",
+"Mistral": "https://mistral.ai/",
+"DeepSeek": "https://www.deepseek.com/",
+"Hugging Face": "https://huggingface.co/",
+"Databricks": "https://www.databricks.com/",
+"Snowflake": "https://www.snowflake.com/",
+"LangChain": "https://www.langchain.com/",
+"Pinecone": "https://www.pinecone.io/",
+"ChatGPT": "https://chatgpt.com/",
+"Claude": "https://claude.ai/",
+"Gemini": "https://gemini.google.com/",
+"Microsoft Copilot": "https://copilot.microsoft.com/",
+"Cursor": "https://cursor.com/",
+"Perplexity": "https://www.perplexity.ai/",
+"SoftBank": "https://group.softbank/en",
+"Blackstone": "https://www.blackstone.com/",
+"Brookfield": "https://www.brookfield.com/",
+"MGX": "https://www.mgx.ae/"
+};
+const urlOf = p => SITES[p] || null;
+const logoSrc = u => `https://www.google.com/s2/favicons?domain=${new URL(u).hostname}&sz=64`;
+const initials = p => p.replace(/\(.*?\)/g, '').trim().split(/[\s\/-]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+function chipHTML(p, hit) {
+  const u = urlOf(p), ini = initials(p);
+  const logo = u
+    ? `<span class="logo"><img src="${logoSrc(u)}" alt="" loading="lazy" onerror="this.parentNode.textContent='${ini}'"></span>`
+    : `<span class="logo">${ini}</span>`;
+  return u
+    ? `<a class="chip${hit ? ' hit' : ''}" href="${u}" target="_blank" rel="noopener" title="Visit the ${esc(p)} website">${logo}${esc(p)}<span class="ext">↗</span></a>`
+    : `<span class="chip${hit ? ' hit' : ''}">${logo}${esc(p)}</span>`;
+}
+
+const NODES = [
+  {id:'materials', name:'Materials & Wafers', layer:'supply', x:110, y:470,
+   desc:'The physical starting point. Ultra-pure silicon wafers, specialty gases (neon, fluorine compounds), photoresists and chemicals that fabs consume in enormous volumes.',
+   players:['Shin-Etsu','SUMCO','GlobalWafers','Siltronic','JSR','Linde','Air Liquide']},
+  {id:'eda', name:'Chip IP & EDA', layer:'supply', x:270, y:170,
+   desc:'Design software and licensable building blocks. Every AI chip is designed and verified with EDA tools, and many use licensed CPU cores and interface IP.',
+   players:['Synopsys','Cadence','Siemens EDA','Arm','Alphawave']},
+  {id:'equipment', name:'Fab Equipment', layer:'supply', x:270, y:720,
+   desc:'The machines that make chips: lithography, etch, deposition and inspection tools. ASML is the only supplier of EUV lithography, a key chokepoint.',
+   players:['ASML','Applied Materials','Lam Research','Tokyo Electron','KLA']},
+  {id:'chipdesign', name:'AI Chip Designers', layer:'chips', x:470, y:250,
+   desc:'Companies that design GPUs and AI accelerators but mostly do not manufacture them. Nvidia dominates; hyperscalers increasingly co-design custom chips with partners like Broadcom and Marvell.',
+   players:['Nvidia','AMD','Broadcom','Marvell','Google TPU','AWS Trainium','Cerebras']},
+  {id:'foundry', name:'Foundries', layer:'chips', x:470, y:500,
+   desc:'Fabs that manufacture logic chips on leading-edge nodes. TSMC makes the vast majority of advanced AI accelerators.',
+   players:['TSMC','Samsung Foundry','Intel Foundry']},
+  {id:'memory', name:'HBM Memory', layer:'chips', x:520, y:760,
+   desc:'High-bandwidth memory: stacked DRAM placed right next to the GPU. Training large models is often limited by memory bandwidth, making HBM one of the tightest bottlenecks.',
+   players:['SK hynix','Samsung','Micron']},
+  {id:'packaging', name:'Advanced Packaging', layer:'chips', x:690, y:620,
+   desc:'Joins the logic die and HBM stacks on one interposer (for example TSMC CoWoS). Packaging capacity has repeatedly capped how many AI GPUs can ship.',
+   players:['TSMC (CoWoS)','ASE','Amkor','Intel (Foveros)']},
+  {id:'networking', name:'Networking & Optics', layer:'chips', x:720, y:300,
+   desc:'Thousands of GPUs must behave like one computer. Switches, network cards and optical transceivers connect them inside racks and across buildings.',
+   players:['Nvidia (InfiniBand, Spectrum-X)','Broadcom','Arista','Cisco','Coherent','Lumentum','InnoLight']},
+  {id:'servers', name:'Servers & Racks', layer:'chips', x:880, y:470,
+   desc:'Contract manufacturers and OEMs that assemble chips, boards, power and cooling into full AI racks shipped to data centers.',
+   players:['Foxconn','Quanta','Wistron / Wiwynn','Supermicro','Dell','HPE']},
+  {id:'energy', name:'Energy & Grid', layer:'infra', x:660, y:880,
+   desc:'Electricity is now a binding constraint. Large AI campuses need hundreds of megawatts to gigawatts, driving deals for nuclear, gas and renewables, and long grid-connection queues.',
+   players:['NextEra','Constellation','Vistra','GE Vernova','Siemens Energy','Oklo','Grid operators (PJM, ERCOT)']},
+  {id:'powercool', name:'Power & Cooling', layer:'infra', x:900, y:800,
+   desc:'Equipment inside the data center: transformers, switchgear, UPS systems and the liquid cooling that dense GPU racks now require.',
+   players:['Vertiv','Schneider Electric','Eaton','ABB','Trane']},
+  {id:'dcbuild', name:'Data Center Builders', layer:'infra', x:1060, y:680,
+   desc:'Developers and colocation operators that secure land and power, build the shells, and lease capacity (measured in MW) to cloud providers.',
+   players:['Equinix','Digital Realty','QTS (Blackstone)','Vantage','NTT','AdaniConneX','Yotta']},
+  {id:'hyperscalers', name:'Hyperscalers', layer:'compute', x:1100, y:420,
+   desc:'The giant clouds. They buy most AI chips, run their own and leased data centers, rent compute to labs and enterprises, and design in-house chips.',
+   players:['AWS','Microsoft Azure','Google Cloud','Oracle OCI','Meta (own use)']},
+  {id:'neoclouds', name:'GPU Clouds', layer:'compute', x:1040, y:190,
+   desc:'Specialist "neoclouds" built purely around renting GPUs, often financed with debt secured against the chips themselves.',
+   players:['CoreWeave','Nebius','Lambda','Crusoe','Together AI']},
+  {id:'data', name:'Data & Feedback', layer:'ai', x:1260, y:110,
+   desc:'Raw material for models: web crawls, licensed content, and human experts who label, rank and write data for fine-tuning and RLHF.',
+   players:['Scale AI','Surge AI','Mercor','Common Crawl','Content licensors']},
+  {id:'labs', name:'Model Labs', layer:'ai', x:1270, y:300,
+   desc:'Train frontier and open-weight foundation models on huge clusters, then serve them through APIs and consumer apps.',
+   players:['OpenAI','Anthropic','Google DeepMind','Meta','xAI','Mistral','DeepSeek']},
+  {id:'software', name:'AI Tooling', layer:'ai', x:1330, y:510,
+   desc:'The layer between models and products: model hubs, data platforms, orchestration frameworks, vector databases and evaluation tools.',
+   players:['Hugging Face','Databricks','Snowflake','LangChain','Pinecone']},
+  {id:'apps', name:'Apps & Users', layer:'demand', x:1320, y:700,
+   desc:'Where value is realised: assistants, coding tools, AI search, copilots inside SaaS, and enterprises deploying AI in their own workflows.',
+   players:['ChatGPT','Claude','Gemini','Microsoft Copilot','Cursor','Perplexity','Enterprises','Consumers']},
+  {id:'capital', name:'Capital', layer:'capital', x:1210, y:880,
+   desc:'The ecosystem runs on hundreds of billions in capex. Venture rounds, sovereign funds, infrastructure funds and private credit finance labs, chips and buildings.',
+   players:['SoftBank','Blackstone','Brookfield','MGX','Sovereign funds','Private credit']}
+];
+
+const EDGES = [
+  ['materials','foundry','Silicon wafers, specialty gases, chemicals'],
+  ['materials','memory','Wafers and process chemicals'],
+  ['eda','chipdesign','Design software, CPU and interface IP'],
+  ['equipment','foundry','EUV lithography, etch, deposition tools'],
+  ['equipment','memory','Fab and stacking tools'],
+  ['chipdesign','foundry','Chip designs sent for manufacture (tape-outs)'],
+  ['foundry','packaging','Logic dies (GPUs, ASICs)'],
+  ['memory','packaging','HBM stacks'],
+  ['packaging','servers','Finished accelerator modules'],
+  ['chipdesign','servers','Reference rack and board designs'],
+  ['networking','servers','Switches, NICs, optical transceivers'],
+  ['servers','hyperscalers','Complete AI racks'],
+  ['servers','neoclouds','Complete AI racks'],
+  ['hyperscalers','chipdesign','Custom chip demand (TPU, Trainium, Maia)'],
+  ['energy','dcbuild','Electricity and grid connections'],
+  ['powercool','dcbuild','Transformers, UPS, liquid cooling'],
+  ['dcbuild','hyperscalers','Leased capacity and powered shells'],
+  ['dcbuild','neoclouds','Leased capacity'],
+  ['capital','dcbuild','Project finance and equity'],
+  ['capital','neoclouds','GPU-backed debt'],
+  ['capital','labs','Funding rounds'],
+  ['hyperscalers','labs','Compute for training and inference'],
+  ['neoclouds','labs','Rented GPU capacity'],
+  ['data','labs','Datasets, labels, expert feedback'],
+  ['labs','software','Models via API and open weights'],
+  ['labs','apps','Models, APIs and assistants'],
+  ['hyperscalers','apps','Cloud AI services (Bedrock, Azure AI, Vertex)'],
+  ['software','apps','Developer tools and data platforms'],
+  ['apps','labs','Subscription and API revenue'],
+  ['apps','capital','Revenue that justifies returns']
+];
+
+const W = 1440, H = 960;
+const svg = document.getElementById('svg');
+const NS = 'http://www.w3.org/2000/svg';
+const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+const col = n => LAYERS[n.layer].c;
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+
+let seed = 7;
+const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+const legend = document.getElementById('legend');
+for (const k in LAYERS) legend.insertAdjacentHTML('beforeend', `<span><i class="dot" style="background:${LAYERS[k].c}"></i>${LAYERS[k].name}</span>`);
+
+const gBg = document.getElementById('gBg');
+for (let i = 0; i < 160; i++) el('circle', {cx: rand()*W, cy: rand()*H, r: rand()*1.4+.3, fill: '#8fa3c0', opacity: (rand()*.25+.05).toFixed(2)}, gBg);
+
+const gDeco = document.getElementById('gDeco');
+const decoOf = {};
+NODES.forEach(n => {
+  const g = el('g', {class:'deco'}, gDeco);
+  decoOf[n.id] = g;
+  const pts = [];
+  const count = 6 + Math.floor(rand()*4);
+  for (let i = 0; i < count; i++) {
+    const a = rand()*Math.PI*2, r = 38 + rand()*48;
+    pts.push([n.x + Math.cos(a)*r, n.y + Math.sin(a)*r]);
+  }
+  pts.forEach((p, i) => {
+    el('line', {x1:n.x, y1:n.y, x2:p[0], y2:p[1], stroke:col(n), 'stroke-width':.5, opacity:.22}, g);
+    const q = pts[(i+1) % pts.length];
+    el('line', {x1:p[0], y1:p[1], x2:q[0], y2:q[1], stroke:col(n), 'stroke-width':.5, opacity:.14}, g);
+    el('circle', {cx:p[0], cy:p[1], r:1.5 + rand()*2.2, fill:col(n), opacity:.55}, g);
+  });
+});
+
+const gEdges = document.getElementById('gEdges');
+const edgeEls = EDGES.map(([a, b, label]) => {
+  const A = byId[a], B = byId[b];
+  const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy);
+  const cx = (A.x + B.x)/2 - dy/len * len*.14, cy = (A.y + B.y)/2 + dx/len * len*.14;
+  const d = `M${A.x},${A.y} Q${cx},${cy} ${B.x},${B.y}`;
+  const base = el('path', {d, class:'edge-base', stroke: col(A)}, gEdges);
+  const flow = el('path', {d, class:'edge-flow', stroke: col(A)}, gEdges);
+  return {a, b, label, base, flow};
+});
+
+const gNodes = document.getElementById('gNodes');
+const nodeEls = {};
+NODES.forEach(n => {
+  const g = el('g', {class:'node', tabindex:0, role:'button', 'aria-label':n.name}, gNodes);
+  el('circle', {cx:n.x, cy:n.y, r:30, fill:'none', stroke:col(n), 'stroke-width':1, 'stroke-opacity':.45, class:'ring'}, g);
+  el('circle', {cx:n.x, cy:n.y, r:19, fill:col(n), opacity:.9, filter:'url(#glow)'}, g);
+  el('circle', {cx:n.x, cy:n.y, r:7, fill:'#fff', opacity:.55}, g);
+  const t = el('text', {x:n.x, y:n.y + 52}, g); t.textContent = n.name;
+  g.addEventListener('click', e => { e.stopPropagation(); if (!moved) focusNode(n.id); });
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focusNode(n.id); } });
+  nodeEls[n.id] = g;
+});
+
+let vb = {x:0, y:0, w:W, h:H}, anim = null, current = null;
+const setVB = v => { vb = v; svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`); };
+function animateTo(target, done) {
+  cancelAnimationFrame(anim);
+  const from = {...vb}, t0 = performance.now(), dur = 650;
+  const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+  const step = now => {
+    const t = Math.min(1, (now - t0)/dur), k = ease(t);
+    setVB({x: from.x + (target.x-from.x)*k, y: from.y + (target.y-from.y)*k, w: from.w + (target.w-from.w)*k, h: from.h + (target.h-from.h)*k});
+    if (t < 1) anim = requestAnimationFrame(step); else if (done) done();
+  };
+  anim = requestAnimationFrame(step);
+}
+const pxToWorld = () => Math.max(vb.w / svg.clientWidth, vb.h / svg.clientHeight);
+
+const gSat = document.getElementById('gSat');
+let currentHl = null;
+function drawPlayers(n, hl) {
+  gSat.innerHTML = '';
+  const s = pxToWorld();
+  const R = 96*s, g = el('g', {class:'sat'}, gSat);
+  document.querySelectorAll('.node text').forEach(t => t.style.opacity = '');
+  nodeEls[n.id].querySelector('text').style.opacity = 0;
+  const title = el('text', {x:n.x, y:n.y + R + 52*s, 'text-anchor':'middle', 'font-size':17*s, 'font-weight':600, 'stroke-width':4*s}, g);
+  title.textContent = n.name;
+  n.players.forEach((p, i) => {
+    const a = -Math.PI/2 + i * (Math.PI*2 / n.players.length);
+    const px = n.x + Math.cos(a)*R, py = n.y + Math.sin(a)*R;
+    el('line', {x1:n.x, y1:n.y, x2:px, y2:py, stroke:col(n), 'stroke-width':1.2*s, opacity:.7}, g);
+    const u = urlOf(p);
+    if (p === hl) el('circle', {cx:px, cy:py, r:19*s, fill:'none', stroke:'#7fd0ff', 'stroke-width':2.5*s, class:'pulse'}, g);
+    const h = u ? el('a', {href:u, target:'_blank', rel:'noopener'}, g) : el('g', {}, g);
+    if (u) { h.addEventListener('click', e => e.stopPropagation()); h.addEventListener('pointerdown', e => e.stopPropagation()); }
+    el('circle', {cx:px, cy:py, r:12*s, fill:'#fff', stroke:col(n), 'stroke-width':1.5*s}, h);
+    const ini = el('text', {x:px, y:py + 3.3*s, 'text-anchor':'middle', 'font-size':9*s, 'font-weight':700, style:'fill:#0c0f16;stroke:none'}, h);
+    ini.textContent = initials(p);
+    if (u) { const im = el('image', {href:logoSrc(u), x:px - 8*s, y:py - 8*s, width:16*s, height:16*s}, h); im.addEventListener('error', () => im.remove()); }
+    const right = Math.cos(a) > .2, left = Math.cos(a) < -.2;
+    const t = el('text', {class:'lbl', x: px + (right ? 17*s : left ? -17*s : 0), y: py + (Math.sin(a) > .5 ? 27*s : Math.sin(a) < -.5 ? -19*s : 4*s),
+      'text-anchor': right ? 'start' : left ? 'end' : 'middle', 'font-size': 12.5*s, 'stroke-width': 3*s}, h);
+    t.textContent = p;
+  });
+}
+
+function focusNode(id, hl) {
+  const n = byId[id]; current = id; currentHl = hl || null;
+  const nb = new Set([id]);
+  edgeEls.forEach(e => { if (e.a === id) nb.add(e.b); if (e.b === id) nb.add(e.a); });
+  NODES.forEach(m => { nodeEls[m.id].classList.toggle('dim', !nb.has(m.id)); decoOf[m.id].classList.toggle('dim', m.id !== id); });
+  edgeEls.forEach(e => {
+    const on = e.a === id || e.b === id;
+    [e.base, e.flow].forEach(p => { p.classList.toggle('dim', !on); p.classList.toggle('hl', on); });
+  });
+  const xs = [...nb].map(k => byId[k].x), ys = [...nb].map(k => byId[k].y), pad = 130;
+  let x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad, y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
+  const aspect = svg.clientWidth / svg.clientHeight;
+  let w = Math.max(x1 - x0, 420), h = Math.max(y1 - y0, 320);
+  if (w / h < aspect) w = h * aspect; else h = w / aspect;
+  const cx = (x0 + x1)/2, cy = (y0 + y1)/2;
+  gSat.innerHTML = '';
+  document.querySelectorAll('.node text').forEach(t => t.style.opacity = '');
+  animateTo({x: cx - w/2, y: cy - h/2, w, h}, () => drawPlayers(n, currentHl));
+  renderPanel(n, currentHl);
+}
+
+function reset() {
+  current = null; currentHl = null; gSat.innerHTML = '';
+  document.querySelectorAll('.node text').forEach(t => t.style.opacity = '');
+  document.querySelectorAll('.dim,.hl').forEach(e => e.classList.remove('dim', 'hl'));
+  animateTo({x:0, y:0, w:W, h:H});
+  renderOverview();
+}
+
+const panel = document.getElementById('panel');
+const linkHTML = (n, label) => `<div class="link" data-id="${n.id}"><i class="dot" style="background:${col(n)}"></i><div><b>${n.name}</b><small>${label}</small></div></div>`;
+function renderPanel(n, hl) {
+  const ins = edgeEls.filter(e => e.b === n.id), outs = edgeEls.filter(e => e.a === n.id);
+  panel.innerHTML = `
+    <span class="tag"><i class="dot" style="background:${col(n)}"></i>${LAYERS[n.layer].name}</span>
+    <h2>${n.name}</h2>
+    <p>${n.desc}</p>
+    <div class="sec"><h3>Inputs coming in</h3>${ins.length ? ins.map(e => linkHTML(byId[e.a], e.label)).join('') : '<p>Starting point of the chain.</p>'}</div>
+    <div class="sec"><h3>Outputs it supplies</h3>${outs.length ? outs.map(e => linkHTML(byId[e.b], e.label)).join('') : '<p>End point of the chain.</p>'}</div>
+    <div class="sec"><h3>Key players · tap to visit</h3><div class="chips">${n.players.map(p => chipHTML(p, p === hl)).join('')}</div></div>
+    <div class="sec"><button class="btn" id="backBtn">← Back to full network</button></div>`;
+  bindLinks();
+  document.getElementById('backBtn').onclick = reset;
+  panel.scrollTop = 0;
+}
+function renderOverview() {
+  const groups = Object.keys(LAYERS).map(k => {
+    const items = NODES.filter(n => n.layer === k);
+    return `<div class="group"><h3 style="margin:14px 0 4px">${LAYERS[k].name}</h3>${items.map(n => linkHTML(n, n.players.slice(0,3).join(', ') + '…')).join('')}</div>`;
+  }).join('');
+  panel.innerHTML = `
+    <span class="tag">Overview</span>
+    <h2>How AI gets built</h2>
+    <p>AI runs on a physical supply chain. Materials and fab tools become chips. Chips, memory and networking become racks. Racks fill power-hungry data centers. Clouds rent that compute to model labs, whose models reach people through apps. Revenue and investor capital flow back to fund the next round of building.</p>
+    <p>The moving dots on each line show the direction things flow. Pick a node below or on the map.</p>
+    <div class="sec">${groups}</div>
+    <div class="foot">Key players are illustrative, not exhaustive, and reflect the market as of 2026. This market shifts quickly.</div>`;
+  bindLinks();
+}
+function bindLinks() { panel.querySelectorAll('.link').forEach(l => l.onclick = () => focusNode(l.dataset.id)); }
+
+let drag = null, moved = false;
+svg.addEventListener('pointerdown', e => { drag = {x:e.clientX, y:e.clientY, vb:{...vb}}; moved = false; });
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!moved && Math.hypot(dx, dy) < 5) return;
+  moved = true; svg.classList.add('dragging');
+  const s = Math.max(drag.vb.w / svg.clientWidth, drag.vb.h / svg.clientHeight);
+  cancelAnimationFrame(anim);
+  setVB({...drag.vb, x: drag.vb.x - dx*s, y: drag.vb.y - dy*s});
+});
+window.addEventListener('pointerup', () => { drag = null; svg.classList.remove('dragging'); setTimeout(() => moved = false, 0); });
+svg.addEventListener('click', () => { if (!moved && current) reset(); });
+svg.addEventListener('wheel', e => {
+  e.preventDefault(); cancelAnimationFrame(anim);
+  const r = svg.getBoundingClientRect(), s = pxToWorld();
+  const ox = (r.width - vb.w/s)/2, oy = (r.height - vb.h/s)/2;
+  const wx = vb.x + (e.clientX - r.left - ox)*s, wy = vb.y + (e.clientY - r.top - oy)*s;
+  const f = Math.exp(e.deltaY * .0015), nw = Math.min(W*1.6, Math.max(220, vb.w*f)), k = nw / vb.w;
+  setVB({x: wx - (wx - vb.x)*k, y: wy - (wy - vb.y)*k, w: nw, h: vb.h*k});
+  if (current) drawPlayers(byId[current], currentHl);
+}, {passive:false});
+document.getElementById('resetBtn').onclick = reset;
+window.addEventListener('keydown', e => { if (e.key === 'Escape') reset(); });
+window.addEventListener('resize', () => { if (current) focusNode(current, currentHl); });
+
+const q = document.getElementById('q'), results = document.getElementById('results');
+const INDEX = [];
+NODES.forEach(n => {
+  INDEX.push({label:n.name, node:n, kind:'node'});
+  n.players.forEach(p => INDEX.push({label:p, node:n, kind:'player'}));
+});
+let hits = [], active = 0;
+const norm = t => t.toLowerCase().normalize('NFKD').replace(/[^a-z0-9 ]/g, ' ');
+const mark = (t, term) => {
+  const i = t.toLowerCase().indexOf(term);
+  return i < 0 ? esc(t) : esc(t.slice(0, i)) + '<mark>' + esc(t.slice(i, i + term.length)) + '</mark>' + esc(t.slice(i + term.length));
+};
+function search() {
+  const term = q.value.trim().toLowerCase();
+  if (!term) { results.hidden = true; return; }
+  const nt = norm(term).trim();
+  hits = INDEX.map(it => {
+    const l = it.label.toLowerCase(), nl = norm(it.label);
+    let score = l.startsWith(term) ? 0 : nl.split(/\s+/).some(w => w.startsWith(nt)) ? 1 : (l.includes(term) || nl.includes(nt)) ? 2 : -1;
+    return {...it, score};
+  }).filter(h => h.score >= 0).sort((a, b) => a.score - b.score || (a.kind === b.kind ? 0 : a.kind === 'player' ? -1 : 1) || a.label.length - b.label.length || a.label.localeCompare(b.label)).slice(0, 12);
+  active = 0;
+  results.innerHTML = hits.length ? hits.map((h, i) => {
+    const icon = h.kind === 'player' ? chipLogo(h.label) : `<span class="logo" style="background:${col(h.node)}"></span>`;
+    const sub = h.kind === 'player'
+      ? `<i class="dot" style="background:${col(h.node)}"></i>in ${esc(h.node.name)}`
+      : `<i class="dot" style="background:${col(h.node)}"></i>${esc(LAYERS[h.node.layer].name)}`;
+    return `<div class="res${i === 0 ? ' active' : ''}" role="option" data-i="${i}">${icon}<div><b>${mark(h.label, term)}</b><small>${sub}</small></div></div>`;
+  }).join('') : '<div class="noresult">No matches in the network</div>';
+  results.hidden = false;
+  results.querySelectorAll('.res').forEach(r => {
+    r.onmousedown = e => { e.preventDefault(); pick(+r.dataset.i); };
+  });
+}
+function chipLogo(p) {
+  const u = urlOf(p), ini = initials(p);
+  return u ? `<span class="logo"><img src="${logoSrc(u)}" alt="" loading="lazy" onerror="this.parentNode.textContent='${ini}'"></span>` : `<span class="logo">${ini}</span>`;
+}
+function pick(i) {
+  const h = hits[i]; if (!h) return;
+  results.hidden = true; q.value = h.label; q.blur();
+  focusNode(h.node.id, h.kind === 'player' ? h.label : null);
+}
+function setActive(i) {
+  const rows = results.querySelectorAll('.res'); if (!rows.length) return;
+  active = (i + rows.length) % rows.length;
+  rows.forEach((r, k) => r.classList.toggle('active', k === active));
+  rows[active].scrollIntoView({block:'nearest'});
+}
+q.addEventListener('input', search);
+q.addEventListener('focus', () => { if (q.value.trim()) search(); });
+q.addEventListener('blur', () => setTimeout(() => results.hidden = true, 120));
+q.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+  else if (e.key === 'Enter') { e.preventDefault(); pick(active); }
+  else if (e.key === 'Escape') { e.stopPropagation(); if (!results.hidden) results.hidden = true; else { q.value = ''; q.blur(); } }
+});
+window.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+});
+
+renderOverview();
+</script>
+</body>
+</html>
