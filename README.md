@@ -1,4 +1,4 @@
-# The AI Ecosystem
+# The AI Universe
 
 An interactive map of how AI gets built, from sand and electricity to the chatbot on your phone.
 
@@ -6,14 +6,14 @@ An interactive map of how AI gets built, from sand and electricity to the chatbo
 
 ## What it shows
 
-The AI industry runs on a physical supply chain. This map lays it out as a connected network of 19 parts, grouped into seven layers:
+The AI industry runs on a physical supply chain. This map lays it out as a connected network of 23 parts, grouped into seven layers:
 
 - **Semiconductor Supply Chain:** materials, chip design tools, fab equipment
-- **Chips & Hardware:** chip designers, foundries, memory, packaging, networking, servers
+- **Chips & Hardware:** GPU makers, custom chips, foundries, memory, packaging, networking, servers
 - **Physical Infrastructure:** energy, power and cooling, data center builders
 - **Compute Providers:** hyperscalers and GPU clouds
-- **Models & Data:** model labs, training data, AI tooling
-- **Applications & Demand:** the apps and users where value is realised
+- **Models & Data:** frontier and open-weight labs, training data, open models and developer tools, enterprise data platforms
+- **Applications & Demand:** AI apps and the customers who pay for them
 - **Capital:** the money that funds it all
 
 ## How to use it

@@ -3,24 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The AI Ecosystem</title>
+<title>The AI Universe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#05060a;--panel:#0c0f16;--line:#1c2230;--text:#e9edf3;--muted:#8d96a6;--chip:#151a24}
+  :root{--bg:#07101c;--panel:rgba(7,16,28,.72);--line:rgba(150,190,215,.14);--text:#eaf3f8;--muted:#8fa7b8;--chip:rgba(22,40,58,.6)}
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  header{padding:16px 20px 10px;border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-  header h1{font-size:20px;margin:0 0 4px;font-weight:600;letter-spacing:.2px}
+  html,body{margin:0;min-height:100%;color:var(--text);font-family:"Outfit",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  body{background:radial-gradient(ellipse 70% 55% at 0% 100%,rgba(70,150,150,.42),transparent 70%),radial-gradient(ellipse 60% 45% at 100% 0%,rgba(40,70,120,.28),transparent 70%),linear-gradient(180deg,#050a14 0%,#0a1726 45%,#0f2a36 80%,#15404a 100%);background-attachment:fixed}
+  header{padding:18px 22px 12px;border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  header h1{font-family:"Jost",sans-serif;font-size:30px;margin:0 0 6px;font-weight:300;letter-spacing:.42em;text-transform:uppercase;text-shadow:0 0 18px rgba(170,230,255,.45)}
   header p{margin:0;color:var(--muted);font-size:13.5px;max-width:720px;line-height:1.5}
   .hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin-left:auto}
   .search{position:relative;width:300px;max-width:100%}
-  .search input{width:100%;background:#0f131c;border:1px solid #2a3244;border-radius:10px;color:var(--text);font-size:14px;padding:9px 12px 9px 34px;outline:none}
+  .search input{font-family:inherit;width:100%;background:rgba(9,20,34,.92);border:1px solid rgba(150,190,215,.22);border-radius:10px;color:var(--text);font-size:14px;padding:9px 12px 9px 34px;outline:none}
   .search input:focus{border-color:#4b6fa8;box-shadow:0 0 0 3px rgba(61,184,255,.15)}
   .search .sicon{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;border:2px solid var(--muted);border-radius:50%;pointer-events:none}
   .search .sicon:after{content:'';position:absolute;width:6px;height:2px;background:var(--muted);right:-6px;bottom:-3px;transform:rotate(45deg)}
-  .results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#0f131c;border:1px solid #2a3244;border-radius:10px;padding:6px;z-index:20;max-height:360px;overflow-y:auto;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(9,20,34,.92);border:1px solid rgba(150,190,215,.22);border-radius:10px;padding:6px;z-index:20;max-height:360px;overflow-y:auto;box-shadow:0 12px 30px rgba(0,0,0,.5)}
   .results[hidden]{display:none}
   .res{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:7px;cursor:pointer}
-  .res.active,.res:hover{background:#1a2030}
+  .res.active,.res:hover{background:rgba(60,110,140,.22)}
   .res b{display:block;font-size:13.5px;font-weight:600}
   .res small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;margin-top:1px}
   .res mark{background:none;color:#7fd0ff}
@@ -31,18 +35,20 @@
   .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
-  .wrap{display:flex;height:calc(100vh - 118px);min-height:560px}
+  body{display:flex;flex-direction:column;height:100vh}
+  header{flex:none}
+  .wrap{display:flex;flex:1;min-height:520px}
   .stage{flex:1;position:relative;min-width:0;overflow:hidden}
   svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none;user-select:none}
   svg.dragging{cursor:grabbing}
   .controls{position:absolute;left:14px;bottom:14px;display:flex;gap:8px}
-  .btn{background:rgba(20,25,35,.85);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
-  .btn:hover{border-color:#3a4458}
-  .hint{position:absolute;right:14px;bottom:16px;font-size:12px;color:var(--muted);pointer-events:none}
-  .panel{width:370px;flex:none;background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:20px 20px 28px}
-  .panel h2{font-size:19px;margin:6px 0 6px;font-weight:600}
+  .btn{font-family:inherit;background:rgba(14,30,46,.8);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
+  .btn:hover{border-color:rgba(150,200,230,.4)}
+  .hint{position:absolute;right:14px;top:12px;font-size:12px;color:var(--muted);pointer-events:none}
+  .panel{width:370px;flex:none;background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-left:1px solid var(--line);overflow-y:auto;padding:20px 20px 28px}
+  .panel h2{font-family:"Jost",sans-serif;font-size:22px;margin:6px 0 8px;font-weight:400;letter-spacing:.04em}
   .tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
-  .panel p{color:#c3cad6;font-size:14px;line-height:1.6;margin:0 0 14px}
+  .panel p{color:#c4d4de;font-size:14.5px;font-weight:300;line-height:1.65;margin:0 0 14px}
   .sec{margin-top:18px}
   .sec h3{font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin:0 0 8px;font-weight:600}
   .link{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent}
@@ -52,30 +58,36 @@
   .link small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:2px}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
   .chip{display:inline-flex;align-items:center;gap:7px;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 4px;font-size:12.5px;color:var(--text);text-decoration:none}
-  a.chip:hover{border-color:#3a4458;background:#1b2130}
+  a.chip:hover{border-color:rgba(150,200,230,.4);background:rgba(60,110,140,.28)}
   .logo{width:22px;height:22px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:9.5px;font-weight:700;color:#0c0f16}
   .logo img{width:16px;height:16px;object-fit:contain}
   .ext{opacity:.5;font-size:11px}
   .sat a:hover text.lbl{text-decoration:underline}
   .group{margin-bottom:10px}
-  .foot{margin-top:22px;font-size:11.5px;color:#6c7586;line-height:1.5}
+  .foot{margin-top:22px;font-size:11.5px;color:#6f8798;line-height:1.5}
   .edge-base{fill:none;stroke-width:1.4;opacity:.28;transition:opacity .35s}
   .edge-flow{fill:none;stroke-width:2;opacity:.55;stroke-dasharray:2 10;animation:flow 1.4s linear infinite;transition:opacity .35s}
   @keyframes flow{to{stroke-dashoffset:-24}}
-  @media (prefers-reduced-motion:reduce){.edge-flow{animation:none}}
   .node{cursor:pointer;transition:opacity .35s}
-  .node text{font-size:15px;fill:#dfe5ee;text-anchor:middle;paint-order:stroke;stroke:#05060a;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+  .node text{font-size:15px;font-weight:400;letter-spacing:.02em;fill:#e6f0f6;text-anchor:middle;paint-order:stroke;stroke:#08121f;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
   .node:hover .ring{stroke-opacity:1}
   .deco{transition:opacity .35s}
+  .ring{animation:breathe 3.2s ease-in-out infinite}
+  @keyframes breathe{0%,100%{stroke-opacity:.3}50%{stroke-opacity:.85}}
+  .twinkle{animation:twinkle var(--tw,4s) ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.95}}
+
   .dim{opacity:.08!important}
   .hl.edge-base{opacity:.75;stroke-width:2.2}
   .hl.edge-flow{opacity:1;stroke-width:2.6}
-  .sat text{fill:#e9edf3;paint-order:stroke;stroke:#05060a;stroke-linejoin:round}
+  .sat text{fill:#eef6fa;paint-order:stroke;stroke:#08121f;stroke-linejoin:round}
   .sat{animation:fadein .4s ease both}
   @keyframes fadein{from{opacity:0}to{opacity:1}}
   @media (max-width:860px){
+    body{height:auto}
     .wrap{flex-direction:column;height:auto}
-    .stage{height:64vh;min-height:380px}
+    header h1{font-size:22px;letter-spacing:.3em}
+    .stage{flex:none;height:64vh;min-height:380px}
     .panel{width:auto;border-left:0;border-top:1px solid var(--line)}
     .hint{display:none}
   }
@@ -84,13 +96,13 @@
 <body>
 <header>
   <div>
-    <h1>The AI Ecosystem</h1>
+    <h1>The AI Universe</h1>
     <p>From sand and electricity to the chatbot on your phone. Tap any node to zoom in and see what flows into it, what it supplies, and who the key players are.</p>
   </div>
   <div class="hdr-right">
     <div class="search">
       <span class="sicon"></span>
-      <input id="q" type="search" placeholder="Search companies or parts of the network" autocomplete="off" aria-label="Search companies" aria-controls="results">
+      <input id="q" type="search" placeholder="Search companies…" autocomplete="off" aria-label="Search companies" aria-controls="results">
       <div class="results" id="results" role="listbox" hidden></div>
     </div>
     <div class="legend" id="legend"></div>
@@ -98,10 +110,14 @@
 </header>
 <div class="wrap">
   <div class="stage">
-    <svg id="svg" viewBox="0 0 1440 960" preserveAspectRatio="xMidYMid meet" aria-label="Network map of the AI ecosystem">
+    <svg id="svg" viewBox="0 0 1600 960" preserveAspectRatio="xMidYMid meet" aria-label="Network map of the AI ecosystem">
       <defs>
         <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
           <feGaussianBlur stdDeviation="7" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="starglow" x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="1.6" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
@@ -117,16 +133,21 @@
 
 <script>
 const LAYERS = {
-  supply:  {name:'Semiconductor Supply Chain', c:'#ff6a3d'},
-  chips:   {name:'Chips & Hardware',           c:'#ffc23d'},
-  infra:   {name:'Physical Infrastructure',    c:'#2fd6b4'},
-  compute: {name:'Compute Providers',          c:'#3db8ff'},
-  ai:      {name:'Models & Data',              c:'#a98bff'},
-  demand:  {name:'Applications & Demand',      c:'#ff6fb1'},
-  capital: {name:'Capital',                    c:'#c9d1dc'}
+  supply:  {name:'Semiconductor Supply Chain', c:'#ff8a62'},
+  chips:   {name:'Chips & Hardware',           c:'#ffd47a'},
+  infra:   {name:'Physical Infrastructure',    c:'#4fe3c6'},
+  compute: {name:'Compute Providers',          c:'#62c9ff'},
+  ai:      {name:'Models & Data',              c:'#b8a2ff'},
+  demand:  {name:'Applications & Demand',      c:'#ff86c8'},
+  capital: {name:'Capital',                    c:'#e3edf5'}
 };
 
 const SITES = {
+"Intel (Gaudi)": "https://www.intel.com/content/www/us/en/products/details/processors/ai-accelerators/gaudi.html",
+"Microsoft Maia": "https://azure.microsoft.com/",
+"Meta MTIA": "https://ai.meta.com/",
+"Meta (Llama)": "https://www.llama.com/",
+"Alibaba (Qwen)": "https://qwen.ai/",
 "Shin-Etsu": "https://www.shinetsu.co.jp/en/",
 "SUMCO": "https://www.sumcosi.com/english/",
 "GlobalWafers": "https://www.sas-globalwafers.com/en/",
@@ -216,6 +237,11 @@ const SITES = {
 "Databricks": "https://www.databricks.com/",
 "Snowflake": "https://www.snowflake.com/",
 "LangChain": "https://www.langchain.com/",
+"LlamaIndex": "https://www.llamaindex.ai/",
+"Weights & Biases": "https://wandb.ai/",
+"Ollama": "https://ollama.com/",
+"MongoDB": "https://www.mongodb.com/",
+"Elastic": "https://www.elastic.co/",
 "Pinecone": "https://www.pinecone.io/",
 "ChatGPT": "https://chatgpt.com/",
 "Claude": "https://claude.ai/",
@@ -252,9 +278,12 @@ const NODES = [
   {id:'equipment', name:'Fab Equipment', layer:'supply', x:270, y:720,
    desc:'The machines that make chips: lithography, etch, deposition and inspection tools. ASML is the only supplier of EUV lithography, a key chokepoint.',
    players:['ASML','Applied Materials','Lam Research','Tokyo Electron','KLA']},
-  {id:'chipdesign', name:'AI Chip Designers', layer:'chips', x:470, y:250,
-   desc:'Companies that design GPUs and AI accelerators but mostly do not manufacture them. Nvidia dominates; hyperscalers increasingly co-design custom chips with partners like Broadcom and Marvell.',
-   players:['Nvidia','AMD','Broadcom','Marvell','Google TPU','AWS Trainium','Cerebras']},
+  {id:'gpus', name:'GPU Makers', layer:'chips', x:470, y:275,
+   desc:'Merchant chip companies that design GPUs and AI accelerators and sell them to anyone: clouds, labs, enterprises and governments. Nvidia dominates, helped by its CUDA software ecosystem.',
+   players:['Nvidia','AMD','Intel (Gaudi)','Cerebras']},
+  {id:'custom', name:'Custom Chips', layer:'chips', x:610, y:130,
+   desc:'Chips built for one cloud company\'s own data centers. The big clouds design them in-house, often with Broadcom or Marvell as design partners, to cut costs and depend less on Nvidia.',
+   players:['Google TPU','AWS Trainium','Microsoft Maia','Meta MTIA','Broadcom','Marvell']},
   {id:'foundry', name:'Foundries', layer:'chips', x:470, y:500,
    desc:'Fabs that manufacture logic chips on leading-edge nodes. TSMC makes the vast majority of advanced AI accelerators.',
    players:['TSMC','Samsung Foundry','Intel Foundry']},
@@ -279,25 +308,34 @@ const NODES = [
   {id:'dcbuild', name:'Data Center Builders', layer:'infra', x:1060, y:680,
    desc:'Developers and colocation operators that secure land and power, build the shells, and lease capacity (measured in MW) to cloud providers.',
    players:['Equinix','Digital Realty','QTS (Blackstone)','Vantage','NTT','AdaniConneX','Yotta']},
-  {id:'hyperscalers', name:'Hyperscalers', layer:'compute', x:1100, y:420,
+  {id:'hyperscalers', name:'Hyperscalers', layer:'compute', x:1100, y:430,
    desc:'The giant clouds. They buy most AI chips, run their own and leased data centers, rent compute to labs and enterprises, and design in-house chips.',
    players:['AWS','Microsoft Azure','Google Cloud','Oracle OCI','Meta (own use)']},
   {id:'neoclouds', name:'GPU Clouds', layer:'compute', x:1040, y:190,
    desc:'Specialist "neoclouds" built purely around renting GPUs, often financed with debt secured against the chips themselves.',
    players:['CoreWeave','Nebius','Lambda','Crusoe','Together AI']},
-  {id:'data', name:'Data & Feedback', layer:'ai', x:1260, y:110,
+  {id:'data', name:'Data & Feedback', layer:'ai', x:1300, y:110,
    desc:'Raw material for models: web crawls, licensed content, and human experts who label, rank and write data for fine-tuning and RLHF.',
    players:['Scale AI','Surge AI','Mercor','Common Crawl','Content licensors']},
-  {id:'labs', name:'Model Labs', layer:'ai', x:1270, y:300,
-   desc:'Train frontier and open-weight foundation models on huge clusters, then serve them through APIs and consumer apps.',
-   players:['OpenAI','Anthropic','Google DeepMind','Meta','xAI','Mistral','DeepSeek']},
-  {id:'software', name:'AI Tooling', layer:'ai', x:1330, y:510,
-   desc:'The layer between models and products: model hubs, data platforms, orchestration frameworks, vector databases and evaluation tools.',
-   players:['Hugging Face','Databricks','Snowflake','LangChain','Pinecone']},
-  {id:'apps', name:'Apps & Users', layer:'demand', x:1320, y:700,
-   desc:'Where value is realised: assistants, coding tools, AI search, copilots inside SaaS, and enterprises deploying AI in their own workflows.',
-   players:['ChatGPT','Claude','Gemini','Microsoft Copilot','Cursor','Perplexity','Enterprises','Consumers']},
-  {id:'capital', name:'Capital', layer:'capital', x:1210, y:880,
+  {id:'frontier', name:'Frontier Labs', layer:'ai', x:1250, y:290,
+   desc:'Labs training the most capable models on the largest clusters. They mostly keep model weights closed and sell access through their own apps and paid APIs.',
+   players:['OpenAI','Anthropic','Google DeepMind','xAI']},
+  {id:'openlabs', name:'Open-Weight Labs', layer:'ai', x:1450, y:250,
+   desc:'Labs that release model weights anyone can download, run, fine-tune and build on. Their models spread through model hubs and developer tools rather than one company\'s app.',
+   players:['Meta (Llama)','Mistral','DeepSeek','Alibaba (Qwen)']},
+  {id:'devtools', name:'Open Models & Dev Tools', layer:'ai', x:1480, y:440,
+   desc:'Where developers find, run and build on models: model hubs that host open weights, frameworks for building AI apps and agents, local runtimes, and tools to track and evaluate experiments.',
+   players:['Hugging Face','LangChain','LlamaIndex','Weights & Biases','Ollama']},
+  {id:'dataplat', name:'Data Platforms', layer:'ai', x:1275, y:520,
+   desc:'Where companies store, clean and govern their own data, then feed it to AI through fine-tuning and retrieval (RAG). Includes data lakehouses, warehouses and vector databases.',
+   players:['Databricks','Snowflake','Pinecone','MongoDB','Elastic']},
+  {id:'aiapps', name:'AI Apps', layer:'demand', x:1440, y:645,
+   desc:'The products people actually use: chat assistants, coding tools, AI search and copilots built into everyday software.',
+   players:['ChatGPT','Claude','Gemini','Microsoft Copilot','Cursor','Perplexity']},
+  {id:'customers', name:'Customers', layer:'demand', x:1500, y:855,
+   desc:'Who pays for it all. Consumers buy subscriptions, businesses buy seats and API usage, and governments buy for public services. Their spending is the revenue that has to justify the investment upstream.',
+   players:['Consumers','Enterprises','Developers','Governments']},
+  {id:'capital', name:'Capital', layer:'capital', x:1240, y:880,
    desc:'The ecosystem runs on hundreds of billions in capex. Venture rounds, sovereign funds, infrastructure funds and private credit finance labs, chips and buildings.',
    players:['SoftBank','Blackstone','Brookfield','MGX','Sovereign funds','Private credit']}
 ];
@@ -305,37 +343,47 @@ const NODES = [
 const EDGES = [
   ['materials','foundry','Silicon wafers, specialty gases, chemicals'],
   ['materials','memory','Wafers and process chemicals'],
-  ['eda','chipdesign','Design software, CPU and interface IP'],
+  ['eda','gpus','Design software, CPU and interface IP'],
+  ['eda','custom','Design software and licensed IP'],
   ['equipment','foundry','EUV lithography, etch, deposition tools'],
   ['equipment','memory','Fab and stacking tools'],
-  ['chipdesign','foundry','Chip designs sent for manufacture (tape-outs)'],
+  ['gpus','foundry','GPU designs sent for manufacture (tape-outs)'],
+  ['custom','foundry','Custom chip designs sent for manufacture'],
   ['foundry','packaging','Logic dies (GPUs, ASICs)'],
   ['memory','packaging','HBM stacks'],
   ['packaging','servers','Finished accelerator modules'],
-  ['chipdesign','servers','Reference rack and board designs'],
+  ['gpus','servers','Reference rack and board designs'],
   ['networking','servers','Switches, NICs, optical transceivers'],
   ['servers','hyperscalers','Complete AI racks'],
   ['servers','neoclouds','Complete AI racks'],
-  ['hyperscalers','chipdesign','Custom chip demand (TPU, Trainium, Maia)'],
+  ['hyperscalers','custom','Chip requirements and co-design'],
   ['energy','dcbuild','Electricity and grid connections'],
   ['powercool','dcbuild','Transformers, UPS, liquid cooling'],
   ['dcbuild','hyperscalers','Leased capacity and powered shells'],
   ['dcbuild','neoclouds','Leased capacity'],
   ['capital','dcbuild','Project finance and equity'],
   ['capital','neoclouds','GPU-backed debt'],
-  ['capital','labs','Funding rounds'],
-  ['hyperscalers','labs','Compute for training and inference'],
-  ['neoclouds','labs','Rented GPU capacity'],
-  ['data','labs','Datasets, labels, expert feedback'],
-  ['labs','software','Models via API and open weights'],
-  ['labs','apps','Models, APIs and assistants'],
-  ['hyperscalers','apps','Cloud AI services (Bedrock, Azure AI, Vertex)'],
-  ['software','apps','Developer tools and data platforms'],
-  ['apps','labs','Subscription and API revenue'],
-  ['apps','capital','Revenue that justifies returns']
+  ['capital','frontier','Large funding rounds'],
+  ['capital','openlabs','Venture funding'],
+  ['hyperscalers','frontier','Compute for training and inference'],
+  ['neoclouds','frontier','Rented GPU capacity'],
+  ['neoclouds','openlabs','Rented GPU capacity'],
+  ['data','frontier','Datasets, labels, expert feedback'],
+  ['data','openlabs','Training data'],
+  ['openlabs','devtools','Open weights to download and run'],
+  ['frontier','dataplat','Models served inside the data platform'],
+  ['hyperscalers','dataplat','Cloud storage and compute underneath'],
+  ['frontier','aiapps','Models, APIs and their own assistants'],
+  ['devtools','aiapps','Frameworks, model hosting, evaluation'],
+  ['dataplat','aiapps','Company data, vector search, RAG pipelines'],
+  ['aiapps','customers','Assistants, copilots, AI search'],
+  ['hyperscalers','customers','Cloud AI services (Bedrock, Azure AI, Vertex)'],
+  ['customers','aiapps','Subscriptions and seat licences'],
+  ['aiapps','frontier','API fees'],
+  ['customers','capital','Revenue that justifies returns']
 ];
 
-const W = 1440, H = 960;
+const W = 1600, H = 960;
 const svg = document.getElementById('svg');
 const NS = 'http://www.w3.org/2000/svg';
 const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
@@ -349,26 +397,43 @@ const legend = document.getElementById('legend');
 for (const k in LAYERS) legend.insertAdjacentHTML('beforeend', `<span><i class="dot" style="background:${LAYERS[k].c}"></i>${LAYERS[k].name}</span>`);
 
 const gBg = document.getElementById('gBg');
-for (let i = 0; i < 160; i++) el('circle', {cx: rand()*W, cy: rand()*H, r: rand()*1.4+.3, fill: '#8fa3c0', opacity: (rand()*.25+.05).toFixed(2)}, gBg);
+for (let i = 0; i < 520; i++) {
+  const big = rand() < .06, r = big ? 1.3 + rand()*1.1 : rand()*.9 + .25;
+  const c = el('circle', {cx: (rand()*1.6 - .3)*W, cy: (rand()*1.6 - .3)*H, r, fill: rand() < .2 ? '#bfe9ff' : '#ffffff', opacity: (big ? .7 + rand()*.3 : .15 + rand()*.5).toFixed(2)}, gBg);
+  if (big) c.setAttribute('filter', 'url(#starglow)');
+  if (i % 4 === 0) { c.classList.add('twinkle'); c.style.setProperty('--tw', (2.5 + rand()*4).toFixed(1) + 's'); c.style.animationDelay = (-rand()*6).toFixed(1) + 's'; }
+}
 
 const gDeco = document.getElementById('gDeco');
-const decoOf = {};
+const decoOf = {}, ORBITS = [];
 NODES.forEach(n => {
   const g = el('g', {class:'deco'}, gDeco);
   decoOf[n.id] = g;
-  const pts = [];
-  const count = 6 + Math.floor(rand()*4);
-  for (let i = 0; i < count; i++) {
-    const a = rand()*Math.PI*2, r = 38 + rand()*48;
-    pts.push([n.x + Math.cos(a)*r, n.y + Math.sin(a)*r]);
-  }
-  pts.forEach((p, i) => {
-    el('line', {x1:n.x, y1:n.y, x2:p[0], y2:p[1], stroke:col(n), 'stroke-width':.5, opacity:.22}, g);
-    const q = pts[(i+1) % pts.length];
-    el('line', {x1:p[0], y1:p[1], x2:q[0], y2:q[1], stroke:col(n), 'stroke-width':.5, opacity:.14}, g);
-    el('circle', {cx:p[0], cy:p[1], r:1.5 + rand()*2.2, fill:col(n), opacity:.55}, g);
+  const rings = [[38, 58, 3 + Math.floor(rand()*2)], [62, 88, 4 + Math.floor(rand()*3)]];
+  const flip = rand() < .5;
+  rings.forEach(([r0, r1, count], ri) => {
+    const og = el('g', {class:'orbit'}, g);
+    const period = ri === 0 ? 26 + rand()*14 : 45 + rand()*25;
+    ORBITS.push({g:og, cx:n.x, cy:n.y, speed:(360/period) * ((ri === 0) !== flip ? -1 : 1), phase:rand()*360});
+    const start = rand()*Math.PI*2, pts = [];
+    for (let i = 0; i < count; i++) {
+      const a = start + i*(Math.PI*2/count) + (rand() - .5)*.9, r = r0 + rand()*(r1 - r0);
+      pts.push([n.x + Math.cos(a)*r, n.y + Math.sin(a)*r]);
+    }
+    pts.forEach((p, i) => {
+      el('line', {x1:n.x, y1:n.y, x2:p[0], y2:p[1], stroke:col(n), 'stroke-width':.5, opacity:.22}, og);
+      const q = pts[(i+1) % pts.length];
+      el('line', {x1:p[0], y1:p[1], x2:q[0], y2:q[1], stroke:col(n), 'stroke-width':.5, opacity:.14}, og);
+      el('circle', {cx:p[0], cy:p[1], r:1.5 + rand()*2.2, fill:col(n), opacity:.6}, og);
+    });
   });
 });
+
+(function spin(now) {
+  const t = now / 1000;
+  for (const o of ORBITS) o.g.setAttribute('transform', `rotate(${((o.phase + t*o.speed) % 360).toFixed(2)} ${o.cx} ${o.cy})`);
+  requestAnimationFrame(spin);
+})(performance.now());
 
 const gEdges = document.getElementById('gEdges');
 const edgeEls = EDGES.map(([a, b, label]) => {
@@ -414,7 +479,7 @@ let currentHl = null;
 function drawPlayers(n, hl) {
   gSat.innerHTML = '';
   const s = pxToWorld();
-  const R = 96*s, g = el('g', {class:'sat'}, gSat);
+  const R = Math.min(96, svg.clientWidth * 0.17)*s, g = el('g', {class:'sat'}, gSat);
   document.querySelectorAll('.node text').forEach(t => t.style.opacity = '');
   nodeEls[n.id].querySelector('text').style.opacity = 0;
   const title = el('text', {x:n.x, y:n.y + R + 52*s, 'text-anchor':'middle', 'font-size':17*s, 'font-weight':600, 'stroke-width':4*s}, g);
@@ -452,10 +517,13 @@ function focusNode(id, hl) {
   const aspect = svg.clientWidth / svg.clientHeight;
   let w = Math.max(x1 - x0, 420), h = Math.max(y1 - y0, 320);
   if (w / h < aspect) w = h * aspect; else h = w / aspect;
-  const cx = (x0 + x1)/2, cy = (y0 + y1)/2;
+  const maxW = Math.min(760, Math.max(380, svg.clientWidth * 0.75));
+  if (w > maxW) { h *= maxW / w; w = maxW; }
+  const cx = n.x, cy = n.y;
   gSat.innerHTML = '';
   document.querySelectorAll('.node text').forEach(t => t.style.opacity = '');
   animateTo({x: cx - w/2, y: cy - h/2, w, h}, () => drawPlayers(n, currentHl));
+  if (window.innerWidth <= 860) { const st = document.querySelector('.stage').getBoundingClientRect(); if (st.top < 0 || st.bottom > window.innerHeight) document.querySelector('.stage').scrollIntoView({behavior:'smooth', block:'start'}); }
   renderPanel(n, currentHl);
 }
 
